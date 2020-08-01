@@ -1,0 +1,44 @@
+const express = require('express')
+const app = express()
+const mongoose = require('mongoose')
+const Product = require('./models/product')
+
+
+mongoose.connect('mongodb://localhost:27017/taoapp', { useNewUrlParser: true })
+app.use(express.json())
+
+
+app.get("/", (req, res) => {
+    res.status(200).send("หน้าแรกของ api express");
+  });
+
+  // ข้อความสำหรับใส่ path ผิด (localhost:5000/asdfghjkl;)
+app.use((req, res, next) => {
+    var err = new Error("ไม่พบ path ที่คุณต้องการ");
+    err.status = 404;
+    next(err);
+  });
+
+// สร้าง database schema
+const Cat = mongoose.model('Cat', { name: String })
+
+// สร้าง instance จาก model
+const kitty = new Cat({ name: 'JavaScript' })
+
+// save ลง database (return เป็น Promise)
+kitty.save().then(() => console.log('meow'))
+
+const products = [{}]
+
+app.post('/products', async (req, res) => {
+    const payload = req.body
+    const product = new Product(payload)
+    await product.save()
+    res.status(201).end()
+  })
+
+
+
+app.listen(9000, () => {
+  console.log('Application is running on port 9000')
+})
